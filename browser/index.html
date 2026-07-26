@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buzznode</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: 'Noto Sans', 'Noto Color Emoji', sans-serif;
+        background: #0a0a0a;
+        color: #e5e7eb;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at top, #202020 0%, #0a0a0a 60%);
+      }
+      main {
+        width: min(760px, calc(100% - 48px));
+        padding: 32px;
+        border: 1px solid #303030;
+        border-radius: 14px;
+        background: rgba(10, 10, 10, 0.86);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 1.6rem;
+        font-weight: 650;
+      }
+      p {
+        margin: 8px 0 0;
+        color: #a3a3a3;
+        line-height: 1.55;
+      }
+      code {
+        color: #e5e7eb;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Buzznode</h1>
+      <p>
+        This is a persistent desktop for one agent connected to an existing Buzz
+        workspace.
+      </p>
+      <p>
+        Open a terminal and run <code>buzznode setup</code> to connect it, or
+        <code>buzznode status</code> to inspect it.
+      </p>
+    </main>
+  </body>
+</html>

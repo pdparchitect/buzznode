@@ -1,0 +1,39 @@
+# Buzznode - custom bash prompt and shell settings.
+
+__buzznode_ps1() {
+  local exit_code=$?
+  local yellow='\[\e[38;2;215;215;46m\]'
+  local blue='\[\e[1;34m\]'
+  local cyan='\[\e[0;36m\]'
+  local red='\[\e[1;31m\]'
+  local reset='\[\e[0m\]'
+  local arrow
+
+  if [ "$exit_code" -ne 0 ]; then
+    arrow='\[\e[1;31m\]➜'
+  else
+    arrow="${reset}➜"
+  fi
+
+  local branch
+  branch="$(git --no-optional-locks symbolic-ref --short HEAD 2>/dev/null \
+    || git --no-optional-locks rev-parse --short HEAD 2>/dev/null)"
+
+  local git_info=""
+  if [ -n "$branch" ]; then
+    git_info=" ${cyan}(${red}${branch}${cyan})"
+  fi
+
+  PS1="${yellow}@buzznode ${arrow} ${blue}\\w${git_info} ${reset}\$ "
+}
+
+PROMPT_COMMAND="__buzznode_ps1"
+
+export EDITOR=vim
+export LANG=C.UTF-8
+export BROWSER=chromium
+
+if [ -f "$HOME/.config/buzznode/environment" ]; then
+  # shellcheck disable=SC1091
+  source "$HOME/.config/buzznode/environment"
+fi

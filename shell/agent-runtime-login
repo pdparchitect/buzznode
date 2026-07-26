@@ -1,0 +1,238 @@
+#!/bin/bash
+# Choose and run a supported authentication flow for an agent runtime.
+
+set -euo pipefail
+
+codex_command="${CODEX_COMMAND:-codex}"
+claude_command="${CLAUDE_COMMAND:-claude}"
+goose_command="${GOOSE_COMMAND:-goose}"
+
+style_reset=""
+style_bold=""
+style_dim=""
+style_accent=""
+style_info=""
+style_success=""
+style_error=""
+
+if { [ -t 1 ] || [ -t 2 ] || [ "${FORCE_COLOR:-}" = "1" ]; } &&
+    { [ "${TERM:-dumb}" != "dumb" ] || [ "${FORCE_COLOR:-}" = "1" ]; } &&
+    [ -z "${NO_COLOR:-}" ]; then
+    style_reset=$'\033[0m'
+    style_bold=$'\033[1m'
+    style_dim=$'\033[2m'
+    style_accent=$'\033[38;2;215;215;46m'
+    style_info=$'\033[38;5;75m'
+    style_success=$'\033[38;5;78m'
+    style_error=$'\033[38;5;203m'
+fi
+
+print_heading() {
+    printf '\n%s%s%s%s\n' "$style_bold" "$style_accent" "$1" "$style_reset"
+    printf '%s────────────────────────────────────────────────────────────%s\n' \
+        "$style_dim" "$style_reset"
+}
+
+print_info() {
+    printf '%s→%s %s\n' "$style_info" "$style_reset" "$1"
+}
+
+print_success() {
+    printf '%s✓%s %s\n' "$style_success" "$style_reset" "$1"
+}
+
+print_error() {
+    printf '%s×%s %s\n' "$style_error" "$style_reset" "$1" >&2
+}
+
+usage() {
+    cat <<'EOF'
+Agent runtime authentication
+
+Usage:
+  agent-runtime-login codex [device|browser|api-key|status]
+  agent-runtime-login claude [subscription|console|setup-token|sso|status]
+  agent-runtime-login goose [configure|info]
+
+With no authentication method, an interactive chooser explains the available
+flows. Codex supports a real device-code flow. Claude Code currently offers
+browser OAuth or a long-lived setup token rather than device-code login.
+EOF
+}
+
+require_command() {
+    local command_name="$1"
+    if ! command -v "$command_name" >/dev/null 2>&1; then
+        print_error "$command_name is not installed."
+        return 1
+    fi
+}
+
+choose_codex_method() {
+    local default_method="${CODEX_LOGIN_DEFAULT:-device}"
+    local default_choice=1
+    local choice
+
+    if [ "$default_method" = "browser" ]; then
+        default_choice=2
+    fi
+
+    print_heading "Sign in to Codex" >&2
+    print_info "Choose where you want to complete authentication." >&2
+    printf '1. Device code (recommended for remote desktops)\n' >&2
+    printf '2. Browser login (opens the browser on this desktop)\n' >&2
+    printf '3. OpenAI API key (input hidden)\n' >&2
+    printf '4. Check current login status\n' >&2
+    read -r -p "${style_bold}${style_accent}Method [$default_choice]: ${style_reset}" \
+        choice
+    choice="${choice:-$default_choice}"
+
+    case "$choice" in
+        1) printf 'device\n' ;;
+        2) printf 'browser\n' ;;
+        3) printf 'api-key\n' ;;
+        4) printf 'status\n' ;;
+        *)
+            print_error "Choose 1, 2, 3, or 4."
+            return 1
+            ;;
+    esac
+}
+
+login_codex() {
+    local method="${1:-}"
+    local api_key
+
+    require_command "$codex_command"
+    if [ -z "$method" ]; then
+        method="$(choose_codex_method)"
+    fi
+
+    case "$method" in
+        device)
+            print_info "Codex will show a URL and one-time code for another device."
+            "$codex_command" login --device-auth
+            ;;
+        browser)
+            print_info "Opening the Codex login in this desktop's browser."
+            "$codex_command" login
+            ;;
+        api-key)
+            print_heading "Sign in to Codex with an API key"
+            print_info "The key is read securely and is not added to shell history."
+            read -r -s -p "${style_bold}${style_accent}OpenAI API key: ${style_reset}" \
+                api_key
+            printf '\n'
+            if [ -z "$api_key" ]; then
+                print_error "An API key is required."
+                return 1
+            fi
+            printf '%s' "$api_key" | "$codex_command" login --with-api-key
+            unset api_key
+            ;;
+        status)
+            "$codex_command" login status
+            ;;
+        *)
+            print_error "Unknown Codex authentication method: $method"
+            return 1
+            ;;
+    esac
+}
+
+choose_claude_method() {
+    local choice
+
+    print_heading "Sign in to Claude Code" >&2
+    print_info "Claude Code does not currently expose device-code authentication." >&2
+    printf '1. Claude subscription (browser)\n' >&2
+    printf '2. Anthropic Console account (browser)\n' >&2
+    printf '3. Long-lived setup token (remote/headless alternative)\n' >&2
+    printf '4. Organization SSO (browser)\n' >&2
+    printf '5. Check current authentication status\n' >&2
+    read -r -p "${style_bold}${style_accent}Method [1]: ${style_reset}" choice
+    choice="${choice:-1}"
+
+    case "$choice" in
+        1) printf 'subscription\n' ;;
+        2) printf 'console\n' ;;
+        3) printf 'setup-token\n' ;;
+        4) printf 'sso\n' ;;
+        5) printf 'status\n' ;;
+        *)
+            print_error "Choose 1, 2, 3, 4, or 5."
+            return 1
+            ;;
+    esac
+}
+
+login_claude() {
+    local method="${1:-}"
+
+    require_command "$claude_command"
+    if [ -z "$method" ]; then
+        method="$(choose_claude_method)"
+    fi
+
+    case "$method" in
+        subscription)
+            print_info "Opening Claude subscription login in this desktop's browser."
+            "$claude_command" auth login --claudeai
+            ;;
+        console)
+            print_info "Opening Anthropic Console login in this desktop's browser."
+            "$claude_command" auth login --console
+            ;;
+        setup-token)
+            print_info "Starting Claude Code's long-lived setup-token flow."
+            "$claude_command" setup-token
+            ;;
+        sso)
+            print_info "Opening your organization's Claude SSO login."
+            "$claude_command" auth login --sso
+            ;;
+        status)
+            "$claude_command" auth status
+            ;;
+        *)
+            print_error "Unknown Claude authentication method: $method"
+            return 1
+            ;;
+    esac
+}
+
+configure_goose() {
+    local method="${1:-configure}"
+
+    require_command "$goose_command"
+    case "$method" in
+        configure) "$goose_command" configure ;;
+        info) "$goose_command" info ;;
+        *)
+            print_error "Unknown Goose setup method: $method"
+            return 1
+            ;;
+    esac
+}
+
+runtime="${1:-}"
+if [ "$#" -gt 0 ]; then
+    shift
+fi
+
+case "$runtime" in
+    codex) login_codex "$@" ;;
+    claude) login_claude "$@" ;;
+    goose) configure_goose "$@" ;;
+    help|-h|--help|"")
+        usage
+        exit 0
+        ;;
+    *)
+        print_error "Unknown runtime: $runtime"
+        usage >&2
+        exit 1
+        ;;
+esac
+
+print_success "Runtime authentication command finished."

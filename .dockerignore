@@ -1,0 +1,17 @@
+.git
+.env
+rootfs.ext4
+
+# Nothing below is COPYed by the Dockerfile. Excluding it keeps the build
+# context small and makes it structurally impossible for a docs, test, or CI
+# edit to reach the builder at all.
+.github
+.gitignore
+CHANGELOG.md
+IMAGE-SIZE.md
+Makefile
+README.md
+RELEASES.md
+VERSION
+tests
+tools

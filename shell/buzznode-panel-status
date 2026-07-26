@@ -1,0 +1,13 @@
+#!/bin/bash
+# Render the compact Buzznode state shown by the Tint2 panel executor.
+
+set -euo pipefail
+
+if ! buzznode configured >/dev/null 2>&1; then
+    printf '<span foreground="#888888">○</span> Set up Buzznode\n'
+elif NO_COLOR=1 buzznode status 2>/dev/null |
+    grep -Fq 'Agent harness: running'; then
+    printf '<span foreground="#5fd787">●</span> running\n'
+else
+    printf '<span foreground="#ffaf00">●</span> stopped\n'
+fi

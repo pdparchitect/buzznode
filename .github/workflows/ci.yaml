@@ -1,0 +1,127 @@
+name: CI
+
+# Building and smoke-testing the image costs many minutes, so prose-only
+# changes skip it. The ignore list is deliberately explicit rather than a
+# `*.md` glob: VERSION and CHANGELOG.md must keep triggering CI. They are the
+# release intent, a release commit usually touches nothing else, and
+# tag-release.yaml only fires after a successful CI run on main.
+#
+# This is an ignore list, not a `paths` allowlist, so that a new directory
+# nobody remembered to register still gets built and tested.
+on:
+  push:
+    branches:
+      - main
+      - next
+    tags-ignore:
+      - 'v*'
+    paths-ignore:
+      - 'README.md'
+      - 'RELEASES.md'
+      - 'IMAGE-SIZE.md'
+      - '.gitignore'
+  pull_request:
+    branches:
+      - main
+      - next
+    paths-ignore:
+      - 'README.md'
+      - 'RELEASES.md'
+      - 'IMAGE-SIZE.md'
+      - '.gitignore'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and smoke test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate release metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "VERSION is not valid semantic versioning: $VERSION" >&2
+            exit 1
+          fi
+
+          if ! grep -q "^## \\[$VERSION\\]" CHANGELOG.md; then
+            echo "CHANGELOG.md has no section for $VERSION" >&2
+            exit 1
+          fi
+
+      # Seconds, and needs no Docker. Running it before the build means a typo
+      # in a shell script or a Makefile pin that drifted from the Dockerfile
+      # fails here instead of after a full image build.
+      - name: Validate scripts and pinned metadata
+        run: make check
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          platforms: linux/amd64
+          push: false
+          tags: pdparchitect/buzznode:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          container="buzznode-ci"
+          cleanup() {
+            docker rm --force "$container" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          docker run --detach \
+            --name "$container" \
+            --platform linux/amd64 \
+            --shm-size 1g \
+            --publish 127.0.0.1:16903:6901 \
+            pdparchitect/buzznode:ci
+
+          ready=false
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:16903/index.html \
+                >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$ready" != "true" ]; then
+            echo "Buzznode did not become ready within 120 seconds" >&2
+            docker logs --tail 150 "$container" >&2 || true
+            exit 1
+          fi
+
+          docker exec "$container" bash -ec '
+            for command in agent-runtime-login buzznode buzz buzz-acp \
+              buzz-agent buzz-dev-mcp codex codex-acp claude \
+              claude-agent-acp goose; do
+              command -v "$command" >/dev/null
+            done
+            ! command -v buzz-desktop >/dev/null
+            ! command -v buzz-relay >/dev/null
+            ! command -v postgres >/dev/null
+            curl -fsS http://127.0.0.1:6901/ >/dev/null
+          '
+
+          echo "Buzznode is ready with its desktop and agent runtimes"

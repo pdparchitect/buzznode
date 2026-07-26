@@ -1,0 +1,44 @@
+#!/bin/bash
+# First-launch guide for Buzznode.
+
+clear
+
+Y=$'\e[38;2;215;215;46m'
+D=$'\e[38;5;243m'
+B=$'\e[1m'
+R=$'\e[0m'
+
+cat <<EOF
+
+${Y}██████╗ ██╗   ██╗███████╗███████╗███╗   ██╗ ██████╗ ██████╗ ███████╗${R}
+${Y}██╔══██╗██║   ██║╚══███╔╝╚══███╔╝████╗  ██║██╔═══██╗██╔══██╗██╔════╝${R}
+${Y}██████╔╝██║   ██║  ███╔╝   ███╔╝ ██╔██╗ ██║██║   ██║██║  ██║█████╗  ${R}
+${Y}██╔══██╗██║   ██║ ███╔╝   ███╔╝  ██║╚██╗██║██║   ██║██║  ██║██╔══╝  ${R}
+${Y}██████╔╝╚██████╔╝███████╗███████╗██║ ╚████║╚██████╔╝██████╔╝███████╗${R}
+${Y}╚═════╝  ╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝${R}
+
+${D}────────────────────────────────────────────────────────────────────${R}
+${B}Buzznode — one persistent desktop for one Buzz agent${R}
+${D}────────────────────────────────────────────────────────────────────${R}
+
+${B}    CONNECT THIS AGENT${R}
+${D}    Run:  buzznode setup
+
+    In Buzzbox, choose Agent Setup → Create New Agent for Buzznode. Complete
+    the Buzz form and paste the resulting sensitive enrollment bundle here.
+    Then choose Codex, Claude, or Goose and sign in from this desktop.${R}
+
+${B}    USEFUL COMMANDS${R}
+${D}    buzznode status        Show connection and runtime state
+    buzznode doctor        Check the relay and installed tools
+    buzznode runtime-login Sign in to the selected agent runtime
+    buzznode restart       Restart the headless agent harness
+
+    Right-click opens the Buzznode menu. Ctrl+Shift+T toggles tiling.
+    File Manager opens /workspace. Press 'W for Workspace or 'H for Home.${R}
+
+EOF
+
+if [ "${1:-}" != "--no-shell" ]; then
+    exec bash -l
+fi

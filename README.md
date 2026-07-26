@@ -1,14 +1,17 @@
 # Buzznode
 
+<img width="1760" height="894" alt="44340f8d-6e7f-4d1c-a11c-06e187b1f68b" src="https://github.com/user-attachments/assets/92db3018-9ce9-4415-9a38-a159dad8faca" />
+
 Buzznode is one persistent, browser-accessible Linux computer for one
 [Buzz](https://github.com/block/buzz) agent. It joins an existing Buzz
 workspace and runs that agent through the headless `buzz-acp` harness.
 
 Buzznode is not a Buzz workspace client. It does not contain Buzz Desktop, and
 it does not run a relay, database, object store, or other server-side Buzz
-service. Use Buzzbox or another Buzz client to manage the workspace, create
-agents, and communicate with them. Use Buzznode to give one of those agents a
-dedicated browser, terminal, filesystem, runtime login, and long-lived state.
+service. Use [Buzzbox](https://github.com/pdparchitect/buzzbox) or another Buzz
+client to manage the workspace, create agents, and communicate with them. Use
+Buzznode to give one of those agents a dedicated browser, terminal, filesystem,
+runtime login, and long-lived state.
 
 > **Not an official Buzz project.** Buzznode is an independent, community-built
 > environment that packages published Buzz releases. It is not affiliated with,
@@ -17,41 +20,36 @@ dedicated browser, terminal, filesystem, runtime login, and long-lived state.
 > what it is compatible with; all trademarks belong to their respective owners.
 > Report problems with Buzznode here, not to the upstream Buzz project.
 
-## Deployment model
-
-Buzznode has no runtime dependency on Buzzbox. It can connect to any compatible
-Buzz relay that is reachable from the container, including a hosted relay over
-`wss://`, a relay on another server, or a local development relay.
-
-Buzzbox is only an optional onboarding convenience. Its Agent Setup menu can
-create a managed agent and package the relay URL, identity, authorization, and
-response policy into a `buzznode-v1:` enrollment bundle. Another Buzz client or
-provisioning system can supply the same information instead.
-
-The `buzz-local` Docker network, `ws://buzzbox:3000` relay address, and the two
-projects' coordinated Makefile examples are strictly for local testing. They
-are not part of the Buzznode architecture and are not required in deployment.
-
-## How the pieces fit
-
-```text
-Any compatible Buzz workspace                  Independent Buzznode
--------------------------------------           ---------------------------
-Create and manage workspace                    Run one existing agent
-Provide enrollment or credentials       --->  Connect to its configured relay
-Add agent to channels                          Run Codex, Claude, or Goose
-Chat with and mention agent             <----  Handle messages through buzz-acp
-```
-
-The `buzz` command-line tool remains in the node because `buzz-acp` makes it
-available to the running agent for Buzz messaging and tools. The graphical
-`buzz-desktop` application is deliberately absent and cannot be started.
+<img width="3456" height="2234" alt="tpsmlhvh-6904 euw devtunnels ms_(MacBook Pro 16_)" src="https://github.com/user-attachments/assets/dd8b96bc-36fc-4978-90b9-c07fc442b2c9" />
 
 ## Quick start
 
-Buzznode currently targets `linux/amd64`, matching the upstream Buzz binaries.
+You need credentials for a managed agent — either a `buzznode-v1:` enrollment
+bundle, which [Buzzbox](https://github.com/pdparchitect/buzzbox) produces, or
+the agent's relay URL and private key from any other Buzz client. Then:
 
-First, create or select a managed agent in the Buzz client associated with your
+```bash
+docker run --detach \
+  --name buzznode \
+  --platform linux/amd64 \
+  --shm-size 1g \
+  --publish 127.0.0.1:6904:6901 \
+  ghcr.io/pdparchitect/buzznode:latest
+```
+
+Open <http://127.0.0.1:6904>. The setup window asks for the bundle; paste it, or
+press Enter to type the relay URL and private key instead. Pick Codex, Claude
+Code, or Goose, and the node connects to your relay and starts handling messages
+for that agent.
+
+Buzznode targets `linux/amd64`. This command is for trying the node out: its
+state lives in anonymous volumes, so replacing the container loses the
+enrollment and leaves the old volumes behind on disk. For anything you intend to
+keep, use the [persistent setup](#persistent-setup) below.
+
+## Setup in detail
+
+Create or select a managed agent in the Buzz client associated with your
 relay. You need either:
 
 - a `buzznode-v1:` enrollment bundle; or
@@ -72,26 +70,7 @@ When using another Buzz workspace, obtain the managed agent credentials through
 that workspace's client or provisioning process. Buzznode does not contact,
 discover, or require a Buzzbox instance.
 
-Then start Buzznode:
-
-```bash
-docker pull ghcr.io/pdparchitect/buzznode:latest
-docker run --detach \
-  --name buzznode \
-  --platform linux/amd64 \
-  --restart unless-stopped \
-  --shm-size 1g \
-  --publish 127.0.0.1:6904:6901 \
-  --volume buzznode-workspace:/workspace \
-  --volume buzznode-config:/home/buzznode/.config \
-  --volume buzznode-data:/home/buzznode/.local/share \
-  --volume buzznode-nest:/home/buzznode/.buzz \
-  --volume buzznode-codex:/home/buzznode/.codex \
-  --volume buzznode-claude:/home/buzznode/.claude \
-  ghcr.io/pdparchitect/buzznode:latest
-```
-
-Open <http://127.0.0.1:6904>. The first desktop opens a larger terminal setup
+Once the container is running, the first desktop opens a larger terminal setup
 window. Paste the enrollment bundle, then choose a Codex, Claude Code, or Goose
 runtime. The wizard confirms completion and waits for Enter before becoming a
 normal Buzznode terminal; it does not close the window. The bundle supplies:
@@ -117,7 +96,36 @@ The wizard stores connection credentials in
 selected runtime, and starts `buzz-acp`. Buzznode discovers the channels that
 contain this agent and handles messages addressed to it.
 
-For unattended provisioning, configure the node from its terminal:
+### Persistent setup
+
+A long-lived node should survive being recreated, so name its volumes and give
+it a restart policy. If you already started the container above, remove it and
+its anonymous volumes first with `docker rm --force --volumes buzznode`.
+
+```bash
+docker run --detach \
+  --name buzznode \
+  --platform linux/amd64 \
+  --restart unless-stopped \
+  --shm-size 1g \
+  --publish 127.0.0.1:6904:6901 \
+  --volume buzznode-workspace:/workspace \
+  --volume buzznode-config:/home/buzznode/.config \
+  --volume buzznode-data:/home/buzznode/.local/share \
+  --volume buzznode-nest:/home/buzznode/.buzz \
+  --volume buzznode-codex:/home/buzznode/.codex \
+  --volume buzznode-claude:/home/buzznode/.claude \
+  ghcr.io/pdparchitect/buzznode:latest
+```
+
+Setup then runs once. Enrollment, runtime login, browser sessions, and working
+files stay put across `docker rm` and image upgrades. See
+[Persistence](#persistence) for what each volume holds, and
+[One node, one agent](#one-node-one-agent) for running more than one.
+
+### Unattended provisioning
+
+To skip the wizard, configure the node from its terminal:
 
 ```bash
 printf '%s\n' "$BUZZNODE_ENROLLMENT_BUNDLE" |
@@ -133,12 +141,45 @@ in shell history. A raw key from `buzz-admin generate-key` is not a replacement
 for creating a managed agent because it has no Buzz profile, owner attestation,
 or channel membership.
 
+## Deployment model
+
+Buzznode has no runtime dependency on Buzzbox. It can connect to any compatible
+Buzz relay that is reachable from the container, including a hosted relay over
+`wss://`, a relay on another server, or a local development relay.
+
+Buzzbox is only an optional onboarding convenience. Its Agent Setup menu can
+create a managed agent and package the relay URL, identity, authorization, and
+response policy into a `buzznode-v1:` enrollment bundle. Another Buzz client or
+provisioning system can supply the same information instead.
+
+The `buzz-local` Docker network, `ws://buzzbox:3000` relay address, and the two
+projects' coordinated Makefile examples are strictly for local testing. They
+are not part of the Buzznode architecture and are not required in deployment.
+
+## How the pieces fit
+
+```text
+Any compatible Buzz workspace           Independent Buzznode
+---------------------------------       ---------------------------
+Create and manage workspace             Run one existing agent
+Provide enrollment or credentials ----> Connect to its configured relay
+Add agent to channels                   Run Codex, Claude, or Goose
+Chat with and mention agent       <---- Handle messages through buzz-acp
+```
+
+The `buzz` command-line tool remains in the node because `buzz-acp` makes it
+available to the running agent for Buzz messaging and tools. The graphical
+`buzz-desktop` application is deliberately absent and cannot be started.
+
 ## Test locally with Buzzbox
 
-Buzzbox and Buzznode remain independent projects. Their Makefiles coordinate
-only through an optional Docker network and the relay URL.
+[Buzzbox](https://github.com/pdparchitect/buzzbox) is a ready-to-run Buzz
+workspace — desktop, relay, and storage in one image — which makes it the
+easiest way to exercise a node end to end. The two remain independent projects;
+their Makefiles coordinate only through an optional Docker network and the relay
+URL.
 
-From the `buzzbox` directory:
+Clone Buzzbox next to this repository, then from the `buzzbox` directory:
 
 ```bash
 make up \

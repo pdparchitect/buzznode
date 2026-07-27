@@ -31,7 +31,6 @@ the agent's relay URL and private key from any other Buzz client. Then:
 ```bash
 docker run --detach \
   --name buzznode \
-  --platform linux/amd64 \
   --shm-size 1g \
   --publish 127.0.0.1:6904:6901 \
   ghcr.io/pdparchitect/buzznode:latest
@@ -42,10 +41,11 @@ press Enter to type the relay URL and private key instead. Pick Codex, Claude
 Code, or Goose, and the node connects to your relay and starts handling messages
 for that agent.
 
-Buzznode targets `linux/amd64`. This command is for trying the node out: its
-state lives in anonymous volumes, so replacing the container loses the
-enrollment and leaves the old volumes behind on disk. For anything you intend to
-keep, use the [persistent setup](#persistent-setup) below.
+Docker selects the native `linux/amd64` or `linux/arm64` image automatically.
+This command is for trying the node out: its state lives in anonymous volumes,
+so replacing the container loses the enrollment and leaves the old volumes
+behind on disk. For anything you intend to keep, use the
+[persistent setup](#persistent-setup) below.
 
 ## Setup in detail
 
@@ -105,7 +105,6 @@ its anonymous volumes first with `docker rm --force --volumes buzznode`.
 ```bash
 docker run --detach \
   --name buzznode \
-  --platform linux/amd64 \
   --restart unless-stopped \
   --shm-size 1g \
   --publish 127.0.0.1:6904:6901 \
@@ -230,7 +229,8 @@ prefix for another agent. Keeping nodes isolated gives each agent its own:
 - Codex with `codex-acp`;
 - Claude Code with `claude-agent-acp`;
 - Goose with native ACP support;
-- Chrome for login flows and browser-based agent tasks;
+- Chrome on AMD64 or Chromium on ARM64 for login flows and browser-based agent
+  tasks;
 - a terminal, Git, GitHub CLI, Docker CLI, Python, Node.js, pnpm, and common
   development tools; and
 - an Openbox desktop exposed through KasmVNC.
@@ -240,8 +240,9 @@ Buzznode contains no `buzz-desktop`, `buzz-relay`, PostgreSQL, Redis, or MinIO.
 The desktop is about a quarter of the image. It is kept because the node is
 meant to be inspectable, because runtime authentication needs a real browser,
 and because it is the substrate for computer use: `scrot`, `xdotool`, `wmctrl`,
-and Chrome are already present, so an agent can drive the same display a human
-watches through KasmVNC. See [IMAGE-SIZE.md](IMAGE-SIZE.md) for the measured
+and a Chromium-family browser are already present, so an agent can drive the
+same display a human watches through KasmVNC. See
+[IMAGE-SIZE.md](IMAGE-SIZE.md) for the measured
 breakdown and the reasoning, and run `make size-report` to reproduce it.
 
 A purpose-built web application could have taken the desktop's place as the way
@@ -250,12 +251,12 @@ would be far smaller than an X session. That was considered and set aside. It
 would be a second product to design, build, secure, and maintain alongside the
 node itself, which is not where the early effort belongs. More to the point, it
 would not actually remove the graphical stack. Runtime authentication needs a
-real browser, and computer use needs a real display with real input, so Chrome,
-Xvnc, the fonts, and the software GL renderer stay in the image either way —
-and those are the bulk of the cost. Openbox, tint2, and the rest of the desktop
-shell add roughly 22 MiB on top of components already being paid for. Given
-that, the node lives off the land: it surfaces what is already installed rather
-than reimplementing a thinner version of it.
+real browser, and computer use needs a real display with real input, so the
+browser, Xvnc, the fonts, and the software GL renderer stay in the image either
+way — and those are the bulk of the cost. Openbox, tint2, and the rest of the
+desktop shell add roughly 22 MiB on top of components already being paid for.
+Given that, the node lives off the land: it surfaces what is already installed
+rather than reimplementing a thinner version of it.
 
 ## Node commands
 
@@ -292,8 +293,11 @@ The desktop opens at <http://127.0.0.1:6904>. Useful overrides include:
 
 ```bash
 PORT=8080 RESOLUTION=1600x900 make up
+PLATFORM=linux/arm64 make build
 DOCKER=podman make up
 ```
+
+The Makefile selects `linux/amd64` or `linux/arm64` from the host by default.
 
 `make stop` removes the node container but preserves its named volumes.
 
@@ -308,9 +312,12 @@ DOCKER=podman make up
 | Codex ACP adapter   | `1.1.7`   |
 | Claude ACP adapter  | `0.62.0`  |
 
-The Buzz `.deb` and Goose archive are SHA-256 verified during the image build.
-Only the required headless Buzz binaries are extracted from the `.deb`; the
-package and its desktop application are not installed.
+On AMD64, the Buzz `.deb` and Goose archive are SHA-256 verified during the
+image build. Only the required headless Buzz binaries are extracted from the
+`.deb`; the package and its desktop application are not installed. Upstream
+does not publish a Linux ARM64 package, so ARM64 builds compile only those
+headless tools from the pinned tag after verifying its exact Git commit. The
+ARM64 Goose archive is independently SHA-256 verified.
 
 ## Persistence
 
@@ -329,8 +336,13 @@ Buzznode is a trusted, single-user workstation:
 - the saved agent private key can act as that agent;
 - KasmVNC browser authentication and TLS are disabled;
 - the `agent` user has passwordless sudo;
-- coding agents can operate on `/workspace`; and
-- browser sessions and agent credentials persist in volumes.
+- coding agents can operate on `/workspace`;
+- browser sessions and agent credentials persist in volumes; and
+- Codex runs with `sandbox_mode = "danger-full-access"`, because its bubblewrap
+  sandbox cannot create a user namespace inside a container, so no sandbox mode
+  is enforceable here whatever is configured. The setting states what is true
+  rather than implying a boundary that does not exist; the boundary is the
+  container. Override with `BUZZNODE_CODEX_SANDBOX_MODE`.
 
 The provided Makefile binds the desktop to `127.0.0.1`. Keep that default, or
 put Buzznode behind authentication, TLS, and suitable network controls. Never

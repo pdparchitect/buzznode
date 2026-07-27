@@ -7,7 +7,7 @@ if [ ! -f "$HOME/.config/mimeapps.list" ]; then
   mkdir -p "$HOME/.local/share/applications" "$HOME/.config"
   cat > "$HOME/.local/share/applications/chromium-buzznode.desktop" <<'CHROMEDESKTOP'
 [Desktop Entry]
-Name=Chrome
+Name=Browser
 Exec=chromium %u
 Type=Application
 MimeType=x-scheme-handler/http;x-scheme-handler/https;text/html;

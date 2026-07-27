@@ -4,6 +4,9 @@ Buzznode runs its agent through the headless `buzz-acp` harness, yet roughly a
 quarter of the image is a graphical desktop. This document records what that
 costs, why it is there, and which parts have been trimmed.
 
+The measurements below are from the AMD64 image, which uses Google Chrome.
+ARM64 uses Chromium and may have a different package and layer breakdown.
+
 Regenerate every number here with:
 
 ```bash

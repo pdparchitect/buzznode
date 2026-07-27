@@ -34,8 +34,8 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build and smoke test
+  validate:
+    name: Validate source and release metadata
     runs-on: ubuntu-latest
 
     steps:
@@ -64,6 +64,25 @@ jobs:
       - name: Validate scripts and pinned metadata
         run: make check
 
+  build:
+    name: Build and smoke test (${{ matrix.arch }})
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -72,18 +91,22 @@ jobs:
         with:
           context: .
           load: true
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           push: false
-          tags: pdparchitect/buzznode:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: pdparchitect/buzznode:ci-${{ matrix.arch }}
+          cache-from: type=gha,scope=buzznode-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=buzznode-${{ matrix.arch }}
 
       - name: Smoke test
         shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+          IMAGE: pdparchitect/buzznode:ci-${{ matrix.arch }}
+          PLATFORM: ${{ matrix.platform }}
         run: |
           set -euo pipefail
 
-          container="buzznode-ci"
+          container="buzznode-ci-${ARCH}"
           cleanup() {
             docker rm --force "$container" >/dev/null 2>&1 || true
           }
@@ -91,10 +114,10 @@ jobs:
 
           docker run --detach \
             --name "$container" \
-            --platform linux/amd64 \
+            --platform "$PLATFORM" \
             --shm-size 1g \
             --publish 127.0.0.1:16903:6901 \
-            pdparchitect/buzznode:ci
+            "$IMAGE"
 
           ready=false
           for attempt in $(seq 1 60); do
@@ -112,16 +135,6 @@ jobs:
             exit 1
           fi
 
-          docker exec "$container" bash -ec '
-            for command in agent-runtime-login buzznode buzz buzz-acp \
-              buzz-agent buzz-dev-mcp codex codex-acp claude \
-              claude-agent-acp goose; do
-              command -v "$command" >/dev/null
-            done
-            ! command -v buzz-desktop >/dev/null
-            ! command -v buzz-relay >/dev/null
-            ! command -v postgres >/dev/null
-            curl -fsS http://127.0.0.1:6901/ >/dev/null
-          '
+          bash tests/smoke-container.sh "$container" "$ARCH"
 
-          echo "Buzznode is ready with its desktop and agent runtimes"
+          echo "Buzznode is ready with its desktop and agent runtimes on $PLATFORM"

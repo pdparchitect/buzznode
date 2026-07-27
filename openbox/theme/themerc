@@ -20,9 +20,21 @@
 ### WINDOW
 border.width: 1
 
-window.client.padding.width: 0
-window.client.padding.height: 0
-window.handle.width: 4
+# Grab margin. Openbox has no separate resize-sensitivity setting: the areas you
+# can grab are exactly the areas it draws, and with the bottom handle gone the
+# frame offered 1px to grab at the bottom against a 28px titlebar - the bottom
+# corners were nearly unhittable. Client padding is the one knob that adds frame
+# without widening the visible border: it inserts frame around the client and
+# paints it in the frame background, so nothing new is drawn while the grabbable
+# ring goes from 1px to 7px. Measured via _NET_FRAME_EXTENTS: 1,1,28,1 at 0
+# becomes 7,7,34,7 at 6.
+window.client.padding.width: 6
+window.client.padding.height: 6
+# No bottom handle. It renders as a second line under the client area with a
+# resize grip boxed off at each end, which reads as clutter. Resizing stays
+# available through the window edges and corners and through Alt+right-drag
+# anywhere on the frame (see rc.xml).
+window.handle.width: 0
 
 padding.width: 6
 padding.height: 5

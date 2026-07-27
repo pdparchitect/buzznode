@@ -36,7 +36,7 @@ echo
 # The desktop top-levels. WebKit/GTK are Buzz Desktop's runtime in Buzzbox and
 # absent from Buzznode; the closure handles either case.
 GRAPHICAL_TOPLEVEL="
-google-chrome-stable kasmvncserver
+google-chrome-stable chromium chromium-common kasmvncserver
 xterm dbus-x11 x11-utils x11-xserver-utils xorg
 scrot openbox obconf tint2 kitty feh picom xdotool wmctrl xclip
 fonts-noto fonts-noto-color-emoji xfonts-base
@@ -68,7 +68,7 @@ echo "-------------------------"
 awk 'NR==FNR {want[$1]=1; next}
      want[$1] {
        p=$1; s=$2
-       if (p ~ /^google-chrome/)                       c="Chrome browser"
+       if (p ~ /^google-chrome/ || p ~ /^chromium/)    c="Chromium-family browser"
        else if (p ~ /^libwebkit|javascriptcore/)       c="WebKitGTK (Buzz Desktop runtime)"
        # Buzzbox installs the Buzz .deb whole, so the GUI binary drags the
        # package (headless tools included) into the graphical closure.

@@ -37,3 +37,19 @@ if [ -f "$HOME/.config/buzznode/environment" ]; then
   # shellcheck disable=SC1091
   source "$HOME/.config/buzznode/environment"
 fi
+
+# Start in the workspace rather than the home directory.
+#
+# This has to happen here rather than anywhere earlier in the launch chain:
+# Openbox chdirs to $HOME when it starts, whatever directory it was started
+# from, and hands that to everything it launches. So the session working
+# directory cannot be set once for the desktop - terminals arrive in $HOME no
+# matter what the entrypoint or xstartup does. The shell is the one place every
+# terminal passes through regardless of which launcher opened it.
+#
+# Only when the shell landed in $HOME, which is the inherited default. A shell
+# started anywhere else is left where it is, so this never overrides a directory
+# somebody chose on purpose.
+if [ -n "${PS1:-}" ] && [ "$PWD" = "$HOME" ] && [ -d /workspace ]; then
+  cd /workspace || true
+fi

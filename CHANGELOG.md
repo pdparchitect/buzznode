@@ -6,6 +6,61 @@ All notable changes to Buzznode are documented here, following
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-27
+
+### Added
+
+- Publish one multi-architecture Buzznode image for `linux/amd64` and
+  `linux/arm64`, with native builds and headed-browser smoke tests for both
+  architectures before their digests are combined into a release manifest.
+- Build the pinned headless Buzz tools from their exact upstream source commit
+  on ARM64, where upstream does not publish a Linux package.
+
+### Changed
+
+- Keep Google Chrome on AMD64 and use signed Debian Chromium on ARM64 behind
+  the same launcher, Buzz-branded GTK theme, managed policy, and desktop
+  integration.
+- Select native Buzz, Goose, yq, Cortile, and KasmVNC artifacts for the target
+  architecture, and let local builds select the host architecture by default.
+- Pin GTK and Chrome's Linux UI typography to Noto Sans 9, matching every
+  Openbox title, menu, and on-screen-display font declaration instead of
+  inheriting GTK's larger Sans 10 default.
+- Give Chrome a self-contained, Buzz-branded near-black GTK system theme that
+  darkens native menus and popups as well as the tab strip, active tab,
+  toolbar, controls, and address field; render Chrome's window controls from
+  the same XBM masks and state colors as Openbox, square the GTK-controlled
+  outer frame corners, and replace the bundled welcome card with the
+  terminal's ASCII banner on pure black.
+- Remove the window handle, which drew a second line under the client area
+  with a resize grip boxed off at each end. Resizing stays available through
+  the window edges and corners and through Alt+right-drag anywhere on the
+  frame.
+- Declare Codex's sandbox mode as `danger-full-access` at boot. Codex sandboxes
+  commands with bubblewrap, which cannot create a user namespace inside the
+  container, so no sandbox mode is enforceable and Codex warned on every start
+  about falling back to its bundled copy. Override with `BUZZNODE_CODEX_SANDBOX_MODE`.
+- Start terminals in `/workspace` instead of the home directory, so the desktop
+  and the agent harness work in the same tree. Openbox chdirs to `$HOME` at
+  startup whatever directory it was started from and hands that to everything
+  it launches, so this is set in the shell - the one place every terminal
+  passes through - and only when the shell landed in `$HOME`, which leaves
+  non-interactive shells and deliberate directories alone.
+- Widen the window grab margin with client padding. With the handle gone the
+  frame offered 1px to grab at the bottom against a 28px titlebar, so the
+  bottom corners were nearly unhittable. Client padding adds frame around the
+  client and paints it in the frame background, taking the grabbable ring from
+  1px to 7px without drawing anything new.
+
+### Fixed
+
+- Record the workspace as trusted for Codex and Claude Code at boot. Both
+  prompt once per directory before working in it, and `codex-acp` consults the
+  same `trust_level`, so the harness `buzznode launch` starts unattended in
+  `/workspace` would stop on a prompt nobody is present to answer, with the
+  reason buried in its log. Set `BUZZNODE_TRUST_WORKSPACE=false` to keep the
+  prompts.
+
 ## [0.1.0] - 2026-07-26
 
 ### Added

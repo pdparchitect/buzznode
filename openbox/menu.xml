@@ -23,7 +23,7 @@
       </action>
     </item>
     <separator />
-    <item label="Chrome">
+    <item label="Browser">
       <action name="Execute">
         <command>chromium file:///opt/browser/index.html</command>
       </action>

@@ -22,8 +22,12 @@ Existing tags and releases are never replaced.
 Stable releases publish `vX.Y.Z`, `X.Y.Z`, `X.Y`, and `latest`. Prereleases
 publish versioned tags without moving `latest`.
 
-The image is OCI-compatible and currently targets `linux/amd64`, because the
-upstream Buzz desktop package is only available for that architecture.
+Each tag is a multi-architecture image supporting `linux/amd64` and
+`linux/arm64`. Docker selects the matching image automatically. CI builds and
+smoke-tests each architecture on a native GitHub-hosted runner before the
+release workflow combines their digests into one manifest. Upstream publishes
+its Linux package only for AMD64, so the ARM64 image builds the same pinned
+headless Buzz tools from the exact tagged source commit.
 
 After the first publication, make the GHCR package public in GitHub package
 settings if anonymous pulls should be allowed.

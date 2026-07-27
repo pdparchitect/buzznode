@@ -73,4 +73,15 @@ if run_helper codex unknown >/dev/null 2>&1; then
     exit 1
 fi
 
+# Codex and Claude Code prompt once per directory before working in it, and
+# codex-acp consults the same trust_level. `buzznode launch` starts the harness
+# unattended in the workspace, so that prompt has to be settled at boot or the
+# agent stops with the reason buried in its log.
+grep -Fq 'BUZZNODE_TRUST_WORKSPACE' "$project_dir/init.sh"
+grep -Fq 'trust_level = "trusted"' "$project_dir/init.sh"
+grep -Fq 'hasTrustDialogAccepted' "$project_dir/init.sh"
+# The directory trusted at boot must be the one the harness is launched in.
+grep -Fq 'BUZZNODE_HARNESS_WORKDIR:-/workspace' "$project_dir/init.sh"
+grep -Fq 'cd /workspace' "$project_dir/shell/buzznode"
+
 echo "Agent runtime login tests passed."

@@ -26,11 +26,42 @@ runtime login, and long-lived state.
 
 You need credentials for a managed agent — either a `buzznode-v1:` enrollment
 bundle, which [Buzzbox](https://github.com/pdparchitect/buzzbox) produces, or
-the agent's relay URL and private key from any other Buzz client. Then:
+the agent's relay URL and private key from any other Buzz client. Buzznode
+publishes native AMD64 and ARM64 images. Choose the container runtime installed
+on your host.
+
+### Docker
 
 ```bash
 docker run --detach \
   --name buzznode \
+  --shm-size 1g \
+  --publish 127.0.0.1:6904:6901 \
+  ghcr.io/pdparchitect/buzznode:latest
+```
+
+### Podman
+
+```bash
+podman run --detach \
+  --name buzznode \
+  --shm-size 1g \
+  --publish 127.0.0.1:6904:6901 \
+  ghcr.io/pdparchitect/buzznode:latest
+```
+
+### Apple container
+
+Apple's [`container`](https://github.com/apple/container) tool requires Apple
+silicon and macOS 26 or later. Start its service once, then give the browser
+desktop and agent harness enough memory:
+
+```bash
+container system start
+
+container run --detach \
+  --name buzznode \
+  --memory 4g \
   --shm-size 1g \
   --publish 127.0.0.1:6904:6901 \
   ghcr.io/pdparchitect/buzznode:latest
@@ -41,10 +72,11 @@ press Enter to type the relay URL and private key instead. Pick Codex, Claude
 Code, or Goose, and the node connects to your relay and starts handling messages
 for that agent.
 
-Docker selects the native `linux/amd64` or `linux/arm64` image automatically.
-This command is for trying the node out: its state lives in anonymous volumes,
-so replacing the container loses the enrollment and leaves the old volumes
-behind on disk. For anything you intend to keep, use the
+Docker and Podman select the host's native image automatically; Apple
+`container` selects ARM64 on Apple silicon. These commands are for trying the
+node out: its state lives in anonymous volumes, so replacing the container
+loses the enrollment and leaves the old volumes behind on disk. For anything
+you intend to keep, use the
 [persistent setup](#persistent-setup) below.
 
 ## Setup in detail
@@ -116,6 +148,12 @@ docker run --detach \
   --volume buzznode-claude:/home/buzznode/.claude \
   ghcr.io/pdparchitect/buzznode:latest
 ```
+
+Podman accepts the same command with `podman` in place of `docker`. With
+Apple's tool, use `container` in place of `docker`, remove
+`--restart unless-stopped`, and add `--memory 4g`. Apple `container` preserves
+the named volumes and stopped container but does not expose a Docker-style
+restart policy; restart it with `container start buzznode`.
 
 Setup then runs once. Enrollment, runtime login, browser sessions, and working
 files stay put across `docker rm` and image upgrades. See

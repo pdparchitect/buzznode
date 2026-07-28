@@ -6,6 +6,12 @@ All notable changes to Buzznode are documented here, following
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-28
+
+### Changed
+
+- Update the Buzz headless tools to 0.5.0 from upstream commit `4a977c5`.
+
 ## [0.2.0] - 2026-07-27
 
 ### Added

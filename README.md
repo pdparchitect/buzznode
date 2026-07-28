@@ -343,7 +343,7 @@ The Makefile selects `linux/amd64` or `linux/arm64` from the host by default.
 
 | Component           | Version   |
 | ------------------- | --------- |
-| Buzz headless tools | `0.4.26`  |
+| Buzz headless tools | `0.5.0`   |
 | Codex               | `0.145.0` |
 | Claude Code         | `2.1.220` |
 | Goose               | `1.44.0`  |

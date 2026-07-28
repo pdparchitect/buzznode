@@ -10,9 +10,9 @@
 FROM rust:1.95-bookworm AS buzz-tools
 
 ARG TARGETARCH
-ARG BUZZ_VERSION=0.4.26
-ARG BUZZ_DEB_SHA256=1b520756ecfc28ad81981a2cd5cc6688f785f447b3f5d8d553544906f59bf521
-ARG BUZZ_SOURCE_SHA=0096d710ed2e6abab19aaf7cdc14e3ee603d7ec8
+ARG BUZZ_VERSION=0.5.0
+ARG BUZZ_DEB_SHA256=9674cf098eca88333e8d895ec9d0a5c56c796fbc358fe1087b645890b8e2faca
+ARG BUZZ_SOURCE_SHA=4a977c588a540be38bd8ddb268cd24437bac8165
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates curl git pkg-config && \
@@ -138,9 +138,9 @@ RUN arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
 
 # Copy only the headless Buzz tools. The builder extracts the verified upstream
 # package on AMD64 and builds the same pinned source tag on ARM64.
-ARG BUZZ_VERSION=0.4.26
-ARG BUZZ_DEB_SHA256=1b520756ecfc28ad81981a2cd5cc6688f785f447b3f5d8d553544906f59bf521
-ARG BUZZ_SOURCE_SHA=0096d710ed2e6abab19aaf7cdc14e3ee603d7ec8
+ARG BUZZ_VERSION=0.5.0
+ARG BUZZ_DEB_SHA256=9674cf098eca88333e8d895ec9d0a5c56c796fbc358fe1087b645890b8e2faca
+ARG BUZZ_SOURCE_SHA=4a977c588a540be38bd8ddb268cd24437bac8165
 COPY --from=buzz-tools /out/ /usr/local/bin/
 RUN for binary in buzz buzz-acp buzz-agent buzz-dev-mcp git-credential-nostr; do \
         test -x "/usr/local/bin/$binary"; \

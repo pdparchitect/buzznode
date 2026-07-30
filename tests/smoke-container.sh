@@ -16,7 +16,10 @@ fi
     for command in agent-runtime-login buzznode buzz buzz-acp \
         buzz-agent buzz-dev-mcp git-credential-nostr \
         codex codex-acp claude claude-agent-acp goose chromium; do
-        command -v "$command" >/dev/null
+        command -v "$command" >/dev/null || {
+            echo "[smoke] FAILED: $command is not on PATH" >&2
+            exit 1
+        }
     done
 
     case "$(dpkg --print-architecture)" in

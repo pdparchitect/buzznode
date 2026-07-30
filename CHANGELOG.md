@@ -6,6 +6,13 @@ All notable changes to Buzznode are documented here, following
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-07-30
+
+### Changed
+
+- Publish the Launcher application definition and artwork as an OCI artifact
+  attached to the final multi-architecture image digest.
+
 ## [0.5.0] - 2026-07-30
 
 ### Changed

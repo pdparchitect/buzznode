@@ -23,6 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          lfs: true
 
       - name: Validate tag and changelog
         shell: bash
@@ -61,6 +63,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          lfs: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -117,6 +121,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          lfs: true
 
       - name: Download image digests
         uses: actions/download-artifact@v5
@@ -170,6 +176,49 @@ jobs:
           )"
           test -n "$digest"
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: Set up ORAS
+        uses: oras-project/setup-oras@v2
+        with:
+          version: 1.3.3
+
+      - name: Publish Launcher application
+        shell: bash
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          DIGEST: ${{ steps.manifest.outputs.digest }}
+        run: |
+          set -euo pipefail
+
+          version="${GITHUB_REF_NAME#v}"
+          declared="$(jq -er '.version' launcher/application.json)"
+          test "$declared" = "$version"
+          archive_directory="$(mktemp -d)"
+          archive_name=launcher-application.zip
+          archive="${archive_directory}/${archive_name}"
+          (
+            cd launcher
+            find . -maxdepth 1 -type f -printf '%P\n' |
+              LC_ALL=C sort |
+              zip -X -q "$archive" -@
+          )
+          attachment="$(
+            cd "$archive_directory"
+            oras attach \
+              --artifact-type \
+                application/vnd.pdparchitect.launcher.application.v1 \
+              --annotation \
+                "org.opencontainers.image.title=Buzznode Launcher application" \
+              --format json \
+              "${IMAGE}@${DIGEST}" \
+              "${archive_name}:application/vnd.pdparchitect.launcher.application.bundle.v1+zip"
+          )"
+          application_digest="$(jq -er '.digest' <<<"$attachment")"
+          tags=("launcher-${version}")
+          if [[ "$GITHUB_REF_NAME" != *-* ]]; then
+            tags+=("launcher-stable")
+          fi
+          oras tag "${IMAGE}@${application_digest}" "${tags[@]}"
 
       - name: Generate release notes
         id: notes

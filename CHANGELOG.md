@@ -6,6 +6,17 @@ All notable changes to Buzznode are documented here, following
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-07-30
+
+### Added
+
+- Expose the shared desktop screenshot endpoint as the Launcher `preview`
+  interface.
+
+### Changed
+
+- Update the shared Launcher desktop base to `0.1.2`.
+
 ## [0.5.3] - 2026-07-30
 
 ### Changed

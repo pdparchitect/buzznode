@@ -12,7 +12,7 @@ TARGETARCH ?= $(word 2,$(subst /, ,$(PLATFORM)))
 BUZZ_VERSION ?= 0.5.2
 BUZZ_DEB_SHA256 ?= 3f022bc31ed579e045946e6acab8483639bcb94e62c1e70f67b97b22f8f879c5
 BUZZ_SOURCE_SHA ?= 3e48f1b2365d326ee1c9582448d86a99b44ecd5d
-DESKTOP_IMAGE ?= ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.1
+DESKTOP_IMAGE ?= ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.2
 CODEX_VERSION ?= 0.145.0
 CLAUDE_CODE_VERSION ?= 2.1.220
 CODEX_ACP_VERSION ?= 1.1.7
@@ -90,6 +90,7 @@ check:
 	@grep -q '\[ -n "$${PS1:-}" \]' overlay/etc/bash.bashrc.d/buzznode-prompt.sh
 	@test "$$(jq -er '.schemaVersion' launcher/application.json)" = 2
 	@! jq -e 'has("image")' launcher/application.json >/dev/null
+	@jq -e '.interfaces.preview.kind == "preview" and .interfaces.preview.port == 6902 and .interfaces.preview.path == "/preview.jpg"' launcher/application.json >/dev/null
 	@for asset in $$(jq -er '.media.icon, .media.cover, .media.screenshots[].source' launcher/application.json); do \
 		test -f "launcher/$$asset"; \
 	done

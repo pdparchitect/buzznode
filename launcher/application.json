@@ -1,6 +1,5 @@
 {
-  "schemaVersion": 1,
-  "version": "0.5.1",
+  "schemaVersion": 2,
   "id": "4398d440-4e4f-4137-b25e-303bfeb2a276",
   "slug": "buzznode",
   "name": "Buzznode",
@@ -21,12 +20,15 @@
       }
     ]
   },
-  "viewer": "kasmvnc",
-  "containerPort": 6901,
+  "interfaces": {
+    "desktop": {
+      "kind": "kasmweb",
+      "port": 6901,
+      "path": "/"
+    }
+  },
   "memory": "4g",
   "sharedMemory": "1g",
-  "resolutionEnvironment": "DESKTOP_RESOLUTION",
-  "resolution": "1920x1080",
   "environment": {
     "DESKTOP_VNC_STATS": "false"
   },

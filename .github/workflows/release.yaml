@@ -191,8 +191,6 @@ jobs:
           set -euo pipefail
 
           version="${GITHUB_REF_NAME#v}"
-          declared="$(jq -er '.version' launcher/application.json)"
-          test "$declared" = "$version"
           archive_directory="$(mktemp -d)"
           archive_name=launcher-application.zip
           archive="${archive_directory}/${archive_name}"

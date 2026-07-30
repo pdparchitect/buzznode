@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "version": "0.5.1",
+  "id": "4398d440-4e4f-4137-b25e-303bfeb2a276",
+  "slug": "buzznode",
+  "name": "Buzznode",
+  "publisher": "PDP Architect",
+  "description": "A persistent browser-accessible Linux desktop for one Buzz agent, with terminal, filesystem, browser, and Codex, Claude Code, or Goose runtime support.",
+  "tags": [
+    "DEVELOPMENT",
+    "TERMINAL",
+    "AUTONOMOUS"
+  ],
+  "media": {
+    "icon": "icon.png",
+    "cover": "screenshot.png",
+    "screenshots": [
+      {
+        "source": "screenshot.png",
+        "alt": "Fresh Buzznode desktop with its agent enrollment terminal"
+      }
+    ]
+  },
+  "viewer": "kasmvnc",
+  "containerPort": 6901,
+  "memory": "4g",
+  "sharedMemory": "1g",
+  "resolutionEnvironment": "DESKTOP_RESOLUTION",
+  "resolution": "1920x1080",
+  "environment": {
+    "DESKTOP_VNC_STATS": "false"
+  },
+  "mounts": [
+    {
+      "name": "workspace",
+      "target": "/workspace"
+    },
+    {
+      "name": "private/config",
+      "target": "/home/agent/.config"
+    },
+    {
+      "name": "private/data",
+      "target": "/home/agent/.local/share"
+    },
+    {
+      "name": "private/buzz",
+      "target": "/home/agent/.buzz"
+    },
+    {
+      "name": "private/codex",
+      "target": "/home/agent/.codex"
+    },
+    {
+      "name": "private/claude",
+      "target": "/home/agent/.claude"
+    }
+  ]
+}

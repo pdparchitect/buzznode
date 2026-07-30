@@ -25,6 +25,11 @@
       "kind": "kasmweb",
       "port": 6901,
       "path": "/"
+    },
+    "preview": {
+      "kind": "preview",
+      "port": 6902,
+      "path": "/preview.jpg"
     }
   },
   "memory": "4g",

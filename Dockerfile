@@ -10,7 +10,7 @@
 # Buzznode connects to an existing relay and deliberately contains neither the
 # Buzz Desktop client nor local relay/backing services.
 
-ARG DESKTOP_IMAGE=ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.1
+ARG DESKTOP_IMAGE=ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.2
 
 # Upstream publishes a Linux package only for AMD64. Extract its headless tools
 # there; on ARM64, build the same immutable tag and exact commit from source.

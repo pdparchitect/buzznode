@@ -1,0 +1,17 @@
+#!/bin/bash
+# Start the agent harness for a node that has already been enrolled.
+#
+# This is session.d rather than startup.d because enrollment happens inside the
+# session: a brand-new node has no identity until somebody completes the setup
+# wizard desktop-welcome opens, and there is nothing to start until then. On
+# every later boot the node is configured, and the harness comes up with the
+# desktop.
+#
+# `buzznode start` returns once the harness is backgrounded, so this does not
+# hold up the rest of the session.
+
+set -euo pipefail
+
+if buzznode configured >/dev/null 2>&1; then
+    buzznode start
+fi

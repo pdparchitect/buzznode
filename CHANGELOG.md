@@ -6,6 +6,60 @@ All notable changes to Buzznode are documented here, following
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-30
+
+### Changed
+
+- Update the Buzz headless tools to `0.5.2` from upstream commit `3e48f1b`.
+- Re-cut the desktop-base release. 0.4.0 moved Buzznode onto
+  `launcher-image-base-desktop` but was never built and run end to end; this is
+  the first version verified by booting the image and confirming the setup
+  wizard opens over the Buzz wallpaper.
+
+## [0.4.0] - 2026-07-29
+
+### Changed
+
+- Build on the published Launcher desktop base
+  (`ghcr.io/pdparchitect/launcher-image-base-desktop`) instead of assembling
+  Ubuntu, Node, KasmVNC, Openbox, and the browser here. The Dockerfile keeps
+  only what is actually Buzznode: the headless Buzz tools and the coding-agent
+  runtimes.
+- **Breaking.** The desktop account is the base's `agent`, homed at
+  `/home/agent`. Volume targets move from `/home/buzznode/...` to
+  `/home/agent/...`; an existing node must remount its volumes at the new paths
+  or be re-enrolled from a fresh set. The Launcher catalog manifest is updated.
+- **Breaking.** `BUZZNODE_RESOLUTION` and `BUZZNODE_VNC_STATS` are replaced by
+  the base's `DESKTOP_RESOLUTION` and `DESKTOP_VNC_STATS`. Every other
+  `BUZZNODE_*` variable is unchanged.
+- Declare ports the way the other Launcher products do: the desktop's `6901` is
+  inherited from the base rather than redeclared, and this image adds no
+  `EXPOSE` or `HEALTHCHECK` of its own.
+- The agent harness log moves from `/var/log/buzznode` to the base's
+  `/var/log/launcher-desktop`.
+- Product files are installed through `overlay/`, which is copied over the
+  base's defaults, rather than through per-file `COPY` instructions. The
+  entrypoint is the base's: the setup wizard and the node greeting are both
+  reached through `desktop-welcome`, and the harness starts from
+  `/etc/desktop/session.d/10-buzznode-harness`.
+
+### Removed
+
+- The Openbox, Cortile, KasmVNC, GTK-theme, and browser-wrapper sources, along
+  with `init.sh`. All of them are the desktop base's now. What remains is the
+  Buzz wallpaper, favicon, landing page, accent colours, root menu, and the
+  panel entry that opens `buzznode status`.
+
+### Fixed
+
+- The wallpaper is a full-canvas SVG pattern rather than a 37px tile. The base
+  applies wallpapers with `feh --bg-fill`, which would have scaled the old tile
+  into a single enormous dot. It also carries no XML comment: the imlib2 loader
+  feh uses rejects any SVG containing one, and the desktop then comes up with no
+  wallpaper at all. `make check` guards both.
+
+- Refresh the Launcher catalogue screenshot from the rebuilt desktop.
+
 ## [0.3.0] - 2026-07-28
 
 ### Changed

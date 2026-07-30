@@ -1,0 +1,24 @@
+#!/bin/bash
+# The terminal the session opens with.
+#
+# A new node has no identity, so the first terminal is the setup wizard - it is
+# the only thing on this desktop that can do anything useful yet. Once the node
+# is enrolled the terminal is a terminal, behind the node's status greeting.
+
+set -euo pipefail
+
+if buzznode configured >/dev/null 2>&1; then
+    exec kitty \
+        --title "${DESKTOP_TITLE:-Buzznode}" \
+        --override remember_window_size=no \
+        --override initial_window_width=100c \
+        --override initial_window_height=30c \
+        -e bash -lc 'buzznode-greeting; exec bash'
+fi
+
+exec kitty \
+    --title "Set up Buzznode" \
+    --override remember_window_size=no \
+    --override initial_window_width=100c \
+    --override initial_window_height=44c \
+    -e bash -lc 'buzznode setup; exec bash'

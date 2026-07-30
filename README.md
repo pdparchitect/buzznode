@@ -338,9 +338,9 @@ Two consequences are worth knowing:
 
 - The desktop user is `agent`, homed at `/home/agent`, and the agent harness
   log lives in `/var/log/launcher-desktop`.
-- Desktop-level settings use the base's names — `DESKTOP_RESOLUTION`,
-  `DESKTOP_VNC_STATS`, `DESKTOP_TITLE`. Node-level settings keep their
-  `BUZZNODE_*` and `BUZZ_*` names.
+- Desktop-level settings use the base's names — `DESKTOP_VNC_STATS` and
+  `DESKTOP_TITLE`. Node-level settings keep their `BUZZNODE_*` and `BUZZ_*`
+  names.
 
 To build against a different base, override `DESKTOP_IMAGE`:
 
@@ -361,7 +361,7 @@ make smoke
 The desktop opens at <http://127.0.0.1:6904>. Useful overrides include:
 
 ```bash
-PORT=8080 RESOLUTION=1600x900 make up
+PORT=8080 make up
 PLATFORM=linux/arm64 make build
 DOCKER=podman make up
 ```

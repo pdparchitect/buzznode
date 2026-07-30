@@ -6,7 +6,7 @@ project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 temporary_dir="$(mktemp -d)"
 trap 'rm -rf "$temporary_dir"' EXIT
 
-helper="$project_dir/shell/agent-runtime-login"
+helper="$project_dir/overlay/usr/local/bin/agent-runtime-login"
 runtime_log="$temporary_dir/runtime.log"
 export runtime_log
 
@@ -77,11 +77,11 @@ fi
 # codex-acp consults the same trust_level. `buzznode launch` starts the harness
 # unattended in the workspace, so that prompt has to be settled at boot or the
 # agent stops with the reason buried in its log.
-grep -Fq 'BUZZNODE_TRUST_WORKSPACE' "$project_dir/init.sh"
-grep -Fq 'trust_level = "trusted"' "$project_dir/init.sh"
-grep -Fq 'hasTrustDialogAccepted' "$project_dir/init.sh"
+grep -Fq 'BUZZNODE_TRUST_WORKSPACE' "$project_dir/overlay/etc/desktop/startup.d/05-agent-runtime-trust"
+grep -Fq 'trust_level = "trusted"' "$project_dir/overlay/etc/desktop/startup.d/05-agent-runtime-trust"
+grep -Fq 'hasTrustDialogAccepted' "$project_dir/overlay/etc/desktop/startup.d/05-agent-runtime-trust"
 # The directory trusted at boot must be the one the harness is launched in.
-grep -Fq 'BUZZNODE_HARNESS_WORKDIR:-/workspace' "$project_dir/init.sh"
-grep -Fq 'cd /workspace' "$project_dir/shell/buzznode"
+grep -Fq 'BUZZNODE_HARNESS_WORKDIR:-/workspace' "$project_dir/overlay/etc/desktop/startup.d/05-agent-runtime-trust"
+grep -Fq 'cd /workspace' "$project_dir/overlay/usr/local/bin/buzznode"
 
 echo "Agent runtime login tests passed."

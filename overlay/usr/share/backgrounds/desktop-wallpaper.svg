@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <pattern id="buzz-grid" width="37" height="37" patternUnits="userSpaceOnUse">
+      <rect width="37" height="37" fill="#d7d72e" />
+      <circle cx="18.5" cy="18.5" r="1.2" fill="#231e1e" fill-opacity="0.16" />
+    </pattern>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#buzz-grid)" />
+</svg>

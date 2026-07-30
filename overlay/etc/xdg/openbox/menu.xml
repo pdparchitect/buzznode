@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+  <menu id="root-menu" label="Buzznode">
+    <item label="Welcome">
+      <action name="Execute">
+        <command>desktop-welcome</command>
+      </action>
+    </item>
+    <separator />
+    <item label="Terminal">
+      <action name="Execute">
+        <command>kitty</command>
+      </action>
+    </item>
+    <item label="File Manager">
+      <action name="Execute">
+        <command>kitty -e ranger /workspace</command>
+      </action>
+    </item>
+    <item label="Task Manager">
+      <action name="Execute">
+        <command>kitty -e htop</command>
+      </action>
+    </item>
+    <separator />
+    <item label="Browser">
+      <action name="Execute">
+        <command>chromium file:///opt/browser/index.html</command>
+      </action>
+    </item>
+    <separator />
+    <menu id="node-menu" label="Node">
+      <item label="Set Up or Reconfigure">
+        <action name="Execute">
+          <command>kitty --title "Buzznode Setup" --override remember_window_size=no --override initial_window_width=100c --override initial_window_height=44c -e bash -lc "buzznode setup; exec bash"</command>
+        </action>
+      </item>
+      <item label="Status">
+        <action name="Execute">
+          <command>kitty --title "Buzznode Status" -e bash -lc "buzznode status; exec bash"</command>
+        </action>
+      </item>
+      <item label="Doctor">
+        <action name="Execute">
+          <command>kitty --title "Buzznode Doctor" -e bash -lc "buzznode doctor; exec bash"</command>
+        </action>
+      </item>
+      <separator />
+      <item label="Start Agent">
+        <action name="Execute">
+          <command>kitty --title "Start Agent" -e bash -lc "buzznode start; sleep 2; buzznode status; exec bash"</command>
+        </action>
+      </item>
+      <item label="Stop Agent">
+        <action name="Execute">
+          <command>kitty --title "Stop Agent" -e bash -lc "buzznode stop; sleep 2; buzznode status; exec bash"</command>
+        </action>
+      </item>
+      <item label="Restart Agent">
+        <action name="Execute">
+          <command>kitty --title "Restart Agent" -e bash -lc "buzznode restart; sleep 2; buzznode status; exec bash"</command>
+        </action>
+      </item>
+    </menu>
+    <menu id="setup-menu" label="Agent Setup">
+      <item label="Sign in to Codex...">
+        <action name="Execute">
+          <command>kitty --title "Codex Login" -e bash -lc "CODEX_LOGIN_DEFAULT=device agent-runtime-login codex; exec bash"</command>
+        </action>
+      </item>
+      <item label="Sign in to Claude Code...">
+        <action name="Execute">
+          <command>kitty --title "Claude Login" -e bash -lc "agent-runtime-login claude; exec bash"</command>
+        </action>
+      </item>
+      <item label="Configure Goose">
+        <action name="Execute">
+          <command>kitty --title "Goose Setup" -e bash -lc "agent-runtime-login goose; exec bash"</command>
+        </action>
+      </item>
+      <separator />
+      <item label="Codex Status">
+        <action name="Execute">
+          <command>kitty --title "Codex Status" -e bash -lc "codex login status; exec bash"</command>
+        </action>
+      </item>
+      <item label="Claude Status">
+        <action name="Execute">
+          <command>kitty --title "Claude Status" -e bash -lc "claude auth status; exec bash"</command>
+        </action>
+      </item>
+      <item label="Goose Info">
+        <action name="Execute">
+          <command>kitty --title "Goose Info" -e bash -lc "goose info; exec bash"</command>
+        </action>
+      </item>
+    </menu>
+    <menu id="service-menu" label="Logs">
+      <item label="Agent Harness Log">
+        <action name="Execute">
+          <command>kitty --title "Agent Harness Log" -e buzznode logs</command>
+        </action>
+      </item>
+      <item label="Buzznode Log Directory">
+        <action name="Execute">
+          <command>kitty -e ranger /var/log/launcher-desktop</command>
+        </action>
+      </item>
+    </menu>
+    <separator />
+    <menu id="tiling-menu" label="Tiling Mode">
+      <item label="Enable Tiling">
+        <action name="Execute">
+          <command>cortilectl on</command>
+        </action>
+      </item>
+      <item label="Disable Tiling (Floating)">
+        <action name="Execute">
+          <command>cortilectl off</command>
+        </action>
+      </item>
+      <item label="Toggle Tiling">
+        <action name="Execute">
+          <command>cortilectl toggle</command>
+        </action>
+      </item>
+      <separator />
+      <item label="Next Layout">
+        <action name="Execute">
+          <command>cortilectl next-layout</command>
+        </action>
+      </item>
+      <item label="Previous Layout">
+        <action name="Execute">
+          <command>cortilectl prev-layout</command>
+        </action>
+      </item>
+    </menu>
+  </menu>
+</openbox_menu>

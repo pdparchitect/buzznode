@@ -10,7 +10,7 @@ export HOME="$temporary_dir/home"
 export BUZZNODE_CONFIG_DIR="$HOME/.config/buzznode"
 mkdir -p "$HOME"
 
-cli="$project_dir/shell/buzznode"
+cli="$project_dir/overlay/usr/local/bin/buzznode"
 token='token with spaces and $shell characters'
 private_key='0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
 auth_tag='{"kind":"owner delegation","value":"$secret"}'
@@ -56,7 +56,7 @@ if grep -Fq $'\033[' <<<"$plain_status_output"; then
     exit 1
 fi
 
-panel_status="$project_dir/shell/buzznode-panel-status"
+panel_status="$project_dir/overlay/usr/local/bin/desktop-panel-status"
 mock_bin="$temporary_dir/bin"
 mkdir -p "$mock_bin"
 ln -s "$cli" "$mock_bin/buzznode"
@@ -72,21 +72,29 @@ grep -Fq 'Set up Buzznode' <<<"$unconfigured_panel_output"
 configured_panel_output="$(PATH="$mock_bin:$PATH" "$panel_status")"
 grep -Eq '(running|stopped)' <<<"$configured_panel_output"
 
+overlay_dir="$project_dir/overlay"
 normalized_menu="$(
-    tr '\n\t' '  ' < "$project_dir/openbox/menu.xml" | tr -s ' '
+    tr '\n\t' '  ' < "$overlay_dir/etc/xdg/openbox/menu.xml" | tr -s ' '
 )"
 grep -Fq 'buzznode setup; exec bash' <<<"$normalized_menu"
-grep -Fq "buzznode setup; exec bash" "$project_dir/openbox/autostart"
-grep -Fq 'tint2 -c /etc/xdg/tint2/tint2rc' \
-    "$project_dir/openbox/autostart"
 grep -Fq 'kitty --title "Agent Harness Log" -e buzznode logs' \
     <<<"$normalized_menu"
-grep -Fq 'panel_items = PTSEC' "$project_dir/tint2/tint2rc"
-grep -Fq 'execp_command = buzznode-panel-status' "$project_dir/tint2/tint2rc"
-grep -Fq 'buzznode status; exec bash' "$project_dir/tint2/tint2rc"
-grep -Fq 'assets/favicon.svg' "$project_dir/kasm/patch.sh"
-grep -Fq 'COPY kasm/favicon.svg /usr/share/kasmvnc/www/assets/favicon.svg' \
-    "$project_dir/Dockerfile"
+
+# The session entry points the desktop base calls into. The wizard opens for an
+# unenrolled node and the harness only starts once there is an identity, so
+# both branches have to be present.
+welcome="$overlay_dir/usr/local/bin/desktop-welcome"
+grep -Fq 'buzznode setup; exec bash' "$welcome"
+grep -Fq 'buzznode-greeting; exec bash' "$welcome"
+grep -Fq 'buzznode start' \
+    "$overlay_dir/etc/desktop/session.d/10-buzznode-harness"
+
+# This image ships a tint2rc only to add the tooltip and the click action.
+grep -Fq 'panel_items = PTSEC' "$overlay_dir/etc/xdg/tint2/tint2rc"
+grep -Fq 'execp_command = desktop-panel-status' \
+    "$overlay_dir/etc/xdg/tint2/tint2rc"
+grep -Fq 'buzznode status; exec bash' "$overlay_dir/etc/xdg/tint2/tint2rc"
+test -s "$overlay_dir/usr/share/kasmvnc/www/assets/favicon.svg"
 
 if "$cli" configure --relay-url 'https://not-a-websocket.example.com' \
     --private-key "$private_key" >/dev/null 2>&1; then

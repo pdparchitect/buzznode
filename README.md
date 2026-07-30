@@ -141,11 +141,11 @@ docker run --detach \
   --shm-size 1g \
   --publish 127.0.0.1:6904:6901 \
   --volume buzznode-workspace:/workspace \
-  --volume buzznode-config:/home/buzznode/.config \
-  --volume buzznode-data:/home/buzznode/.local/share \
-  --volume buzznode-nest:/home/buzznode/.buzz \
-  --volume buzznode-codex:/home/buzznode/.codex \
-  --volume buzznode-claude:/home/buzznode/.claude \
+  --volume buzznode-config:/home/agent/.config \
+  --volume buzznode-data:/home/agent/.local/share \
+  --volume buzznode-nest:/home/agent/.buzz \
+  --volume buzznode-codex:/home/agent/.codex \
+  --volume buzznode-claude:/home/agent/.claude \
   ghcr.io/pdparchitect/buzznode:latest
 ```
 
@@ -317,6 +317,37 @@ desktop browser, or API-key authentication. Claude Code supports Claude
 subscription, Anthropic Console, long-lived setup-token, or organization SSO
 flows.
 
+## Relationship to the Launcher desktop base
+
+Buzznode is a product image on top of
+`ghcr.io/pdparchitect/launcher-image-base-desktop`, the same substrate the
+other Launcher desktops use. The base supplies Ubuntu, Node, KasmVNC, Openbox,
+Cortile, tint2, kitty, the browser, the GTK theme, the `agent` account, and the
+entrypoint. This repository supplies only the node.
+
+That split is what the source layout reflects:
+
+| Path                             | What it is                                      |
+| -------------------------------- | ----------------------------------------------- |
+| `Dockerfile`                     | The headless Buzz tools and the agent runtimes  |
+| `overlay/`                       | Files copied over the base's defaults            |
+| `overlay/usr/local/bin/buzznode` | The node CLI                                     |
+| `overlay/etc/desktop/session.d/` | Programs the session runs once it has a display  |
+
+Two consequences are worth knowing:
+
+- The desktop user is `agent`, homed at `/home/agent`, and the agent harness
+  log lives in `/var/log/launcher-desktop`.
+- Desktop-level settings use the base's names — `DESKTOP_RESOLUTION`,
+  `DESKTOP_VNC_STATS`, `DESKTOP_TITLE`. Node-level settings keep their
+  `BUZZNODE_*` and `BUZZ_*` names.
+
+To build against a different base, override `DESKTOP_IMAGE`:
+
+```bash
+make up DESKTOP_IMAGE=ghcr.io/pdparchitect/launcher-image-base-desktop:0.2.0
+```
+
 ## Build locally
 
 From this directory:
@@ -343,7 +374,7 @@ The Makefile selects `linux/amd64` or `linux/arm64` from the host by default.
 
 | Component           | Version   |
 | ------------------- | --------- |
-| Buzz headless tools | `0.5.0`   |
+| Buzz headless tools | `0.5.2`   |
 | Codex               | `0.145.0` |
 | Claude Code         | `2.1.220` |
 | Goose               | `1.44.0`  |

@@ -10,16 +10,17 @@
 # Buzznode connects to an existing relay and deliberately contains neither the
 # Buzz Desktop client nor local relay/backing services.
 
-ARG DESKTOP_IMAGE=ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.7
+ARG DESKTOP_IMAGE=ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.8
 
 # Upstream publishes a Linux package only for AMD64. Extract its headless tools
 # there; on ARM64, build the same immutable tag and exact commit from source.
 FROM rust:1.95-bookworm AS buzz-tools
 
 ARG TARGETARCH
-ARG BUZZ_VERSION=0.5.2
-ARG BUZZ_DEB_SHA256=3f022bc31ed579e045946e6acab8483639bcb94e62c1e70f67b97b22f8f879c5
-ARG BUZZ_SOURCE_SHA=3e48f1b2365d326ee1c9582448d86a99b44ecd5d
+ARG BUZZ_VERSION=0.5.3
+ARG BUZZ_RELEASE_TAG=desktop-v0.5.3
+ARG BUZZ_DEB_SHA256=ae20163ef481ccbf3531b9806996d7580a3a24f9258a54698c75fdcb8b16f14b
+ARG BUZZ_SOURCE_SHA=3a96acea09b4a9e3f02c3a26cfb0607d2ccacf42
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates curl git pkg-config && \
@@ -32,7 +33,7 @@ RUN set -eux; \
         buzz_deb="/tmp/Buzz_${BUZZ_VERSION}_amd64.deb"; \
         extract_dir="$(mktemp -d)"; \
         curl -fsSL \
-            "https://github.com/block/buzz/releases/download/v${BUZZ_VERSION}/Buzz_${BUZZ_VERSION}_amd64.deb" \
+            "https://github.com/block/buzz/releases/download/${BUZZ_RELEASE_TAG}/Buzz_${BUZZ_VERSION}_amd64.deb" \
             -o "$buzz_deb"; \
         echo "${BUZZ_DEB_SHA256}  ${buzz_deb}" | sha256sum -c -; \
         dpkg-deb --extract "$buzz_deb" "$extract_dir"; \
@@ -41,7 +42,7 @@ RUN set -eux; \
         done; \
         rm -rf "$extract_dir" "$buzz_deb"; \
     elif [ "$arch" = "arm64" ]; then \
-        git clone --branch "v${BUZZ_VERSION}" --depth 1 \
+        git clone --branch "${BUZZ_RELEASE_TAG}" --depth 1 \
             https://github.com/block/buzz.git /tmp/buzz; \
         cd /tmp/buzz; \
         test "$(git rev-parse HEAD)" = "$BUZZ_SOURCE_SHA"; \
@@ -137,8 +138,8 @@ RUN arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
 
 # Only the headless Buzz tools. The builder extracts the verified upstream
 # package on AMD64 and builds the same pinned source tag on ARM64.
-ARG BUZZ_VERSION=0.5.2
-ARG BUZZ_SOURCE_SHA=3e48f1b2365d326ee1c9582448d86a99b44ecd5d
+ARG BUZZ_VERSION=0.5.3
+ARG BUZZ_SOURCE_SHA=3a96acea09b4a9e3f02c3a26cfb0607d2ccacf42
 ARG BUZZ_SOURCE_URL=https://github.com/block/buzz
 COPY --from=buzz-tools /out/ /usr/local/bin/
 RUN for binary in buzz buzz-acp buzz-agent buzz-dev-mcp git-credential-nostr; do \

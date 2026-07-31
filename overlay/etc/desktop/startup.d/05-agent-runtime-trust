@@ -21,8 +21,13 @@ home_dir="/home/agent"
 harness_workdir="${BUZZNODE_HARNESS_WORKDIR:-/workspace}"
 codex_config="$home_dir/.codex/config.toml"
 
-install_as_runtime_user() {
-    install -m 0600 -o "$runtime_user" -g "$runtime_user" "$1" "$2"
+write_runtime_config() {
+    # Fixed-ownership VirtioFS rejects install's implicit chmod and chown.
+    if [ "$runtime_user" = root ]; then
+        cp "$1" "$2"
+    else
+        install -m 0600 -o "$runtime_user" -g "$runtime_user" "$1" "$2"
+    fi
 }
 
 # Codex sandboxes the commands it runs with bubblewrap, and warns when it has to
@@ -46,7 +51,7 @@ if [ -n "$codex_sandbox_mode" ] &&
         printf 'sandbox_mode = "%s"\n\n' "$codex_sandbox_mode"
         [ -s "$codex_config" ] && cat "$codex_config"
     } > "$codex_sandbox_tmp"
-    install_as_runtime_user "$codex_sandbox_tmp" "$codex_config"
+    write_runtime_config "$codex_sandbox_tmp" "$codex_config"
     rm -f "$codex_sandbox_tmp"
     echo "[buzznode] set Codex sandbox_mode=$codex_sandbox_mode" \
         "(no usable bubblewrap in a container)"
@@ -59,7 +64,9 @@ fi
 if ! grep -Fq "[projects.\"$harness_workdir\"]" "$codex_config" 2>/dev/null; then
     printf '\n[projects."%s"]\ntrust_level = "trusted"\n' \
         "$harness_workdir" >> "$codex_config"
-    chown "$runtime_user:$runtime_user" "$codex_config"
+    if [ "$runtime_user" != root ]; then
+        chown "$runtime_user:$runtime_user" "$codex_config"
+    fi
     echo "[buzznode] recorded $harness_workdir as trusted for Codex"
 fi
 
@@ -74,7 +81,7 @@ if ! jq -e --arg dir "$harness_workdir" \
     if jq --arg dir "$harness_workdir" \
         '.projects[$dir].hasTrustDialogAccepted = true' \
         "$claude_config" > "$claude_trust_tmp" 2>/dev/null; then
-        install_as_runtime_user "$claude_trust_tmp" "$claude_config"
+        write_runtime_config "$claude_trust_tmp" "$claude_config"
         echo "[buzznode] recorded $harness_workdir as trusted for Claude Code"
     fi
     rm -f "$claude_trust_tmp"

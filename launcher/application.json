@@ -26,6 +26,16 @@
       "port": 6901,
       "path": "/"
     },
+    "health": {
+      "kind": "health",
+      "port": 6902,
+      "path": "/healthz"
+    },
+    "notifications": {
+      "kind": "notifications",
+      "port": 6902,
+      "path": "/notifications"
+    },
     "preview": {
       "kind": "preview",
       "port": 6902,

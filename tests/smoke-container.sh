@@ -46,6 +46,21 @@ fi
     curl -fsS http://127.0.0.1:6901/ >/dev/null
 '
 
+# The desktop base owns this contract. Product processes must be able to use
+# the inherited display environment without locating or copying X11 cookies.
+x_access=false
+for attempt in $(seq 1 20); do
+    if "$docker" exec --user agent "$container" xprop -root >/dev/null 2>&1; then
+        x_access=true
+        break
+    fi
+    sleep 1
+done
+if [ "$x_access" != "true" ]; then
+    echo "The agent account could not authenticate to the X display." >&2
+    exit 1
+fi
+
 # Prove that the architecture's actual headed browser reaches the desktop, not
 # merely that its executable loader and --version path work.
 "$docker" exec --detach \

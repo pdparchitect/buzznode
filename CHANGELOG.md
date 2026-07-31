@@ -6,6 +6,14 @@ All notable changes to Buzznode are documented here, following
 
 ## [Unreleased]
 
+## [0.5.6] - 2026-07-31
+
+### Fixed
+
+- Write Codex and Claude runtime configuration without requesting ownership
+  changes when Apple `container` has selected the VM root account for
+  fixed-ownership mounts.
+
 ## [0.5.5] - 2026-07-31
 
 ### Fixed

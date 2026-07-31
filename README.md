@@ -27,10 +27,27 @@ runtime login, and long-lived state.
 You need credentials for a managed agent — either a `buzznode-v1:` enrollment
 bundle, which [Buzzbox](https://github.com/pdparchitect/buzzbox) produces, or
 the agent's relay URL and private key from any other Buzz client. Buzznode
-publishes native AMD64 and ARM64 images. Choose the container runtime installed
-on your host.
+publishes native AMD64 and ARM64 images.
 
-### Docker
+### Launcher (recommended)
+
+The easiest way to run Buzznode is with
+[Launcher](https://github.com/pdparchitect/launcher). Launcher discovers,
+installs, starts, stops, and updates Buzznode while managing its container,
+ports, and persistent storage for you.
+
+1. [Download the latest Launcher release](https://github.com/pdparchitect/launcher/releases/latest).
+2. Open **Marketplace**, select **Buzznode**, and install it.
+3. Choose **Open agent** when installation finishes, then paste your enrollment
+   bundle into the setup window.
+
+Launcher uses Apple `container` on macOS and Docker on Linux.
+
+### Run the container manually
+
+Choose the container runtime installed on your host.
+
+#### Docker
 
 ```bash
 docker run --detach \
@@ -40,7 +57,7 @@ docker run --detach \
   ghcr.io/pdparchitect/buzznode:latest
 ```
 
-### Podman
+#### Podman
 
 ```bash
 podman run --detach \
@@ -50,7 +67,7 @@ podman run --detach \
   ghcr.io/pdparchitect/buzznode:latest
 ```
 
-### Apple container
+#### Apple container
 
 Apple's [`container`](https://github.com/apple/container) tool requires Apple
 silicon and macOS 26 or later. Start its service once, then give the browser

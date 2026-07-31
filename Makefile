@@ -9,10 +9,11 @@ NATIVE_ARCH := $(shell uname -m | sed \
 	-e 's/^aarch64$$/arm64/')
 PLATFORM ?= linux/$(NATIVE_ARCH)
 TARGETARCH ?= $(word 2,$(subst /, ,$(PLATFORM)))
-BUZZ_VERSION ?= 0.5.2
-BUZZ_DEB_SHA256 ?= 3f022bc31ed579e045946e6acab8483639bcb94e62c1e70f67b97b22f8f879c5
-BUZZ_SOURCE_SHA ?= 3e48f1b2365d326ee1c9582448d86a99b44ecd5d
-DESKTOP_IMAGE ?= ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.7
+BUZZ_VERSION ?= 0.5.3
+BUZZ_RELEASE_TAG ?= desktop-v0.5.3
+BUZZ_DEB_SHA256 ?= ae20163ef481ccbf3531b9806996d7580a3a24f9258a54698c75fdcb8b16f14b
+BUZZ_SOURCE_SHA ?= 3a96acea09b4a9e3f02c3a26cfb0607d2ccacf42
+DESKTOP_IMAGE ?= ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.8
 CODEX_VERSION ?= 0.145.0
 CLAUDE_CODE_VERSION ?= 2.1.220
 CODEX_ACP_VERSION ?= 1.1.7
@@ -74,6 +75,7 @@ check:
 	bash tests/test-desktop-theme.sh
 	@grep -q "^ARG DESKTOP_IMAGE=$(DESKTOP_IMAGE)$$" Dockerfile
 	@grep -q "^ARG BUZZ_VERSION=$(BUZZ_VERSION)$$" Dockerfile
+	@grep -q "^ARG BUZZ_RELEASE_TAG=$(BUZZ_RELEASE_TAG)$$" Dockerfile
 	@grep -q "^ARG BUZZ_DEB_SHA256=$(BUZZ_DEB_SHA256)$$" Dockerfile
 	@grep -q "^ARG BUZZ_SOURCE_SHA=$(BUZZ_SOURCE_SHA)$$" Dockerfile
 	@grep -q "^ARG CODEX_VERSION=$(CODEX_VERSION)$$" Dockerfile
@@ -104,6 +106,7 @@ build:
 		--build-arg "TARGETARCH=$(TARGETARCH)" \
 		--build-arg "DESKTOP_IMAGE=$(DESKTOP_IMAGE)" \
 		--build-arg "BUZZ_VERSION=$(BUZZ_VERSION)" \
+		--build-arg "BUZZ_RELEASE_TAG=$(BUZZ_RELEASE_TAG)" \
 		--build-arg "BUZZ_DEB_SHA256=$(BUZZ_DEB_SHA256)" \
 		--build-arg "BUZZ_SOURCE_SHA=$(BUZZ_SOURCE_SHA)" \
 		--build-arg "CODEX_VERSION=$(CODEX_VERSION)" \

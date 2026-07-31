@@ -6,6 +6,23 @@ All notable changes to Buzznode are documented here, following
 
 ## [Unreleased]
 
+## [0.5.8] - 2026-07-31
+
+### Fixed
+
+- Update the shared Launcher desktop base to `0.1.6`, keeping Chrome's software
+  renderer available without a GPU and allowing root-launched Chromium
+  processes to authenticate to the X display and paint their browser surfaces
+  in Apple fixed-mount sessions.
+
+## [0.5.7] - 2026-07-31
+
+### Fixed
+
+- Update the shared Launcher desktop base to `0.1.4`, allowing the
+  unprivileged agent harness to authenticate to the display when Apple
+  fixed-ownership mounts require the desktop session itself to run as root.
+
 ## [0.5.6] - 2026-07-31
 
 ### Fixed

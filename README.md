@@ -391,12 +391,12 @@ The Makefile selects `linux/amd64` or `linux/arm64` from the host by default.
 
 | Component           | Version   |
 | ------------------- | --------- |
-| Buzz headless tools | `0.5.3`   |
-| Codex               | `0.145.0` |
-| Claude Code         | `2.1.220` |
-| Goose               | `1.44.0`  |
-| Codex ACP adapter   | `1.1.7`   |
-| Claude ACP adapter  | `0.62.0`  |
+| Buzz headless tools | `0.5.4`   |
+| Codex               | `0.146.0` |
+| Claude Code         | `2.1.221` |
+| Goose               | `1.45.0`  |
+| Codex ACP adapter   | `1.1.9`   |
+| Claude ACP adapter  | `0.64.2`  |
 
 On AMD64, the Buzz `.deb` and Goose archive are SHA-256 verified during the
 image build. Only the required headless Buzz binaries are extracted from the

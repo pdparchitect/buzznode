@@ -6,6 +6,17 @@ All notable changes to Buzznode are documented here, following
 
 ## [Unreleased]
 
+## [0.5.12] - 2026-08-04
+
+### Changed
+
+- Update the Buzz headless tools to `0.5.4` from upstream commit `651f637`.
+- Update the coding agents and their ACP adapters: Codex `0.146.0`, Claude Code
+  `2.1.221`, Goose `1.45.0`, `codex-acp` `1.1.9`, and `claude-agent-acp`
+  `0.64.2`.
+- Update to Launcher desktop substrate `0.1.9`, returning Buzznode to the same
+  base as Buzzbox.
+
 ## [0.5.11] - 2026-07-31
 
 ### Changed

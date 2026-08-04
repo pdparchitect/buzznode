@@ -10,17 +10,17 @@
 # Buzznode connects to an existing relay and deliberately contains neither the
 # Buzz Desktop client nor local relay/backing services.
 
-ARG DESKTOP_IMAGE=ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.8
+ARG DESKTOP_IMAGE=ghcr.io/pdparchitect/launcher-image-base-desktop:0.1.9
 
 # Upstream publishes a Linux package only for AMD64. Extract its headless tools
 # there; on ARM64, build the same immutable tag and exact commit from source.
 FROM rust:1.95-bookworm AS buzz-tools
 
 ARG TARGETARCH
-ARG BUZZ_VERSION=0.5.3
-ARG BUZZ_RELEASE_TAG=desktop-v0.5.3
-ARG BUZZ_DEB_SHA256=ae20163ef481ccbf3531b9806996d7580a3a24f9258a54698c75fdcb8b16f14b
-ARG BUZZ_SOURCE_SHA=3a96acea09b4a9e3f02c3a26cfb0607d2ccacf42
+ARG BUZZ_VERSION=0.5.4
+ARG BUZZ_RELEASE_TAG=desktop-v0.5.4
+ARG BUZZ_DEB_SHA256=9c2f0df4589c08698dd940e09d911884a5468c35169d1068fc6ccc93012bfeff
+ARG BUZZ_SOURCE_SHA=651f6372754e60e3f936b3397040eb0f1e44c9f3
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates curl git pkg-config && \
@@ -98,10 +98,10 @@ RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor \
 # home. Without an explicit cache directory this root-run install leaves
 # /home/agent/.npm owned by root, and then kitty cannot start and the session
 # opens with no terminal at all.
-ARG CODEX_VERSION=0.145.0
-ARG CLAUDE_CODE_VERSION=2.1.220
-ARG CODEX_ACP_VERSION=1.1.7
-ARG CLAUDE_ACP_VERSION=0.62.0
+ARG CODEX_VERSION=0.146.0
+ARG CLAUDE_CODE_VERSION=2.1.221
+ARG CODEX_ACP_VERSION=1.1.9
+ARG CLAUDE_ACP_VERSION=0.64.2
 ENV npm_config_cache=/tmp/npm-cache
 RUN npm install -g \
         "@openai/codex@${CODEX_VERSION}" \
@@ -115,9 +115,9 @@ RUN npm install -g \
     claude-agent-acp --version
 
 # Goose exposes ACP natively, so it does not need a separate adapter.
-ARG GOOSE_VERSION=1.44.0
-ARG GOOSE_AMD64_SHA256=07febc8b4f73bdfdc3ece3d34d0e21b005f3a4f43008f95b85d6538da8f6bac1
-ARG GOOSE_ARM64_SHA256=da6cb005d421b0bdcb83fe8386ba5ae8060ef17adf64641a684d4fc4b9e1c15f
+ARG GOOSE_VERSION=1.45.0
+ARG GOOSE_AMD64_SHA256=e0db638ac437ca0a60b0c1622f45322608d228d1a285214c3bf48fd9763346a5
+ARG GOOSE_ARM64_SHA256=c9894106c90e404ac8b8d67c628aea2943dd6a1bc83bfd8e2171d482fa43d72a
 RUN arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
     case "$arch" in \
         amd64) goose_arch=x86_64; goose_sha="$GOOSE_AMD64_SHA256" ;; \
@@ -138,8 +138,8 @@ RUN arch="${TARGETARCH:-$(dpkg --print-architecture)}"; \
 
 # Only the headless Buzz tools. The builder extracts the verified upstream
 # package on AMD64 and builds the same pinned source tag on ARM64.
-ARG BUZZ_VERSION=0.5.3
-ARG BUZZ_SOURCE_SHA=3a96acea09b4a9e3f02c3a26cfb0607d2ccacf42
+ARG BUZZ_VERSION=0.5.4
+ARG BUZZ_SOURCE_SHA=651f6372754e60e3f936b3397040eb0f1e44c9f3
 ARG BUZZ_SOURCE_URL=https://github.com/block/buzz
 COPY --from=buzz-tools /out/ /usr/local/bin/
 RUN for binary in buzz buzz-acp buzz-agent buzz-dev-mcp git-credential-nostr; do \
